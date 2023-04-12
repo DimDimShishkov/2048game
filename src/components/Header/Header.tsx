@@ -1,4 +1,3 @@
-import { StatusBar } from "expo-status-bar";
 import { useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 
@@ -60,13 +59,15 @@ export default function Header({
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    marginTop: 50,
+    maxWidth: 500,
+    marginVertical: 50,
     backgroundColor: "#fff",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
+    padding: 10,
   },
   item: {
     width: "100%",

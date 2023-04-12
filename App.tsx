@@ -1,65 +1,65 @@
 import { StatusBar } from "expo-status-bar";
-import {
-  Dimensions,
-  GestureResponderEvent,
-  useWindowDimensions,
-} from "react-native";
+import { Dimensions } from "react-native";
 
 import { StyleSheet, Text, View } from "react-native";
 import Header from "./src/components/Header/Header";
 import Board from "./src/components/Board/Board";
 import { useEffect, useState } from "react";
-
-interface IBoardMatrix {
-  row: number[];
-  boardMatrix: number[][];
-}
+import Footer from "./src/components/Footer/Footer";
+import { boardGenerator } from "./src/hooks/common";
+import { IBoardMatrix } from "./src/hooks/types";
 
 export default function App() {
   const [isGameOver, setGameOver] = useState(false);
   const [currentScore, setCurrentScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
-  const [boardMatrix, setBoardMatrix] = useState([
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-    [0, 0, 0, 0],
-  ]);
+
+  const [boardMatrix, setBoardMatrix] = useState<IBoardMatrix[][]>([]);
+  const [boardRows, setBoardRows] = useState(4);
+  const [boardColumns, setBoardColumns] = useState(4);
 
   useEffect(() => {
-    setRandomTile();
-  }, []);
+    let newBoard = boardGenerator(boardRows, boardColumns);
+    setBoardMatrix(handleRandomTile(newBoard));
+  }, [boardRows, boardColumns]);
 
-  // появление новой ячейки в рандомном месте
-  const setRandomTile = () => {
-    let result: number[][] = boardMatrix;
-    const emptyCells = boardMatrix.flatMap((row, r) =>
-      row.flatMap((cell, c) => (cell == 0 ? { r, c, cell } : []))
+  // появление новой ячейки в рандомный месте
+  const handleRandomTile = (newBoard: IBoardMatrix[][]) => {
+    let result = newBoard;
+    // берем массив всех пустых клеток и выбираем одну из них
+    const emptyCells = newBoard.flatMap((row) =>
+      row.filter((cell) => cell.value == 0 && cell)
     );
-    const item = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    item && (result[item.r][item.c] = Math.random() < 0.5 ? 2 : 4);
+    const emptyCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    // если найдена, присвоить новое значение
+    emptyCell &&
+      (result = result.map((row) =>
+        row.map((cell) =>
+          cell.x === emptyCell.x && cell.y === emptyCell.y
+            ? { ...cell, value: Math.random() < 0.5 ? 2 : 4, isNew: true }
+            : cell
+        )
+      ));
+    // суммируем очки и записываем результат
     const score = result.reduce(
-      (acc, num) => acc + num.reduce((acc2, item) => acc2 + item, 0),
+      (acc, row) => acc + row.reduce((acc, item) => acc + item.value, 0),
       0
     );
     bestScore < score && setBestScore(score);
     setCurrentScore(score);
-    setBoardMatrix(result);
+    return result;
   };
 
   // начать новую игру
   const startNewGame = () => {
+    let newBoard = boardGenerator(boardRows, boardColumns);
     setCurrentScore(0);
-    setBoardMatrix([
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ]);
+    setBoardMatrix(newBoard);
+    handleRandomTile(newBoard);
     return true;
   };
 
-  function rotateRight(matrix: number[][]) {
+  function rotateRight(matrix: IBoardMatrix[][]) {
     let result = [];
     for (let c = 0; c < matrix.length; c++) {
       let row = [];
@@ -70,8 +70,7 @@ export default function App() {
     }
     return result;
   }
-
-  function rotateLeft(matrix: number[][]) {
+  function rotateLeft(matrix: IBoardMatrix[][]) {
     let result = [];
     for (let c = matrix.length - 1; c >= 0; c--) {
       let row = [];
@@ -83,121 +82,91 @@ export default function App() {
     return result;
   }
 
-  function moveUp(inputBoard: number[][]) {
+  // свапы
+  function moveLeft(inputBoard: IBoardMatrix[][]) {
+    // фильтруем ячейки со значениями и складываем если значения одинаковые
+    let board = inputBoard.map((row) => {
+      let currentTiles = row.filter((tile) => tile.value != 0);
+      for (let c = 0; c < currentTiles.length; c++) {
+        if (currentTiles[c].value === currentTiles[c + 1]?.value) {
+          currentTiles[c].value = currentTiles[c].value * 2;
+          currentTiles.splice(c + 1, 1);
+        }
+      }
+      // перезаписываем значения
+      return row.map((item, index) => {
+        return currentTiles[index]
+          ? { ...item, value: currentTiles[index].value }
+          : { ...item, value: 0 };
+      });
+    });
+    return setBoardMatrix(handleRandomTile(board));
+  }
+  function moveRight(inputBoard: IBoardMatrix[][]) {
+    let board = inputBoard.map((row) => {
+      let currentTiles = row.filter((tile) => tile.value != 0);
+      for (let c = currentTiles.length; c > 0; c--) {
+        if (currentTiles[c - 1].value === currentTiles[c - 2]?.value) {
+          currentTiles[c - 1].value = currentTiles[c - 1].value * 2;
+          currentTiles.splice(c - 2, 1);
+        }
+      }
+      // // перезаписываем значения
+      return row.map((item, index) => {
+        return currentTiles[row.length - 1 - index]
+          ? {
+              ...item,
+              value: currentTiles[row.length - 1 - index].value,
+            }
+          : {
+              ...item,
+              value: 0,
+            };
+      });
+    });
+    return setBoardMatrix(handleRandomTile(board));
+  }
+  function moveUp(inputBoard: IBoardMatrix[][]) {
+    let rotatedRight = rotateLeft(inputBoard);
+    let board = rotatedRight.map((row) => {
+      let currentTiles = row.filter((tile) => tile.value != 0);
+      for (let c = 0; c < currentTiles.length; c++) {
+        if (currentTiles[c].value === currentTiles[c + 1]?.value) {
+          currentTiles[c].value = currentTiles[c].value * 2;
+          currentTiles.splice(c + 1, 1);
+        }
+      }
+      // перезаписываем значения
+      return row.map((item, index) => {
+        return currentTiles[index]
+          ? { ...item, value: currentTiles[index].value }
+          : { ...item, value: 0 };
+      });
+    });
+    return setBoardMatrix(handleRandomTile(rotateRight(board)));
+  }
+  function moveDown(inputBoard: IBoardMatrix[][]) {
     let rotatedRight = rotateRight(inputBoard);
-    let board = [];
-    // Shift all numbers to the right
-    for (let r = 0; r < rotatedRight.length; r++) {
-      let row = [];
-      for (let c = 0; c < rotatedRight[r].length; c++) {
-        let current = rotatedRight[r][c];
-        current === 0 ? row.unshift(current) : row.push(current);
-      }
-      board.push(row);
-    }
-    // Combine numbers and shift to right
-    for (let r = 0; r < board.length; r++) {
-      for (let c = board[r].length - 1; c >= 0; c--) {
-        if (board[r][c] > 0 && board[r][c] === board[r][c - 1]) {
-          board[r][c] = board[r][c] * 2;
-          board[r][c - 1] = 0;
-        } else if (board[r][c] === 0 && board[r][c - 1] > 0) {
-          board[r][c] = board[r][c - 1];
-          board[r][c - 1] = 0;
+    let board = rotatedRight.map((row) => {
+      let currentTiles = row.filter((tile) => tile.value != 0);
+      for (let c = 0; c < currentTiles.length; c++) {
+        if (currentTiles[c].value === currentTiles[c + 1]?.value) {
+          currentTiles[c].value = currentTiles[c].value * 2;
+          currentTiles.splice(c + 1, 1);
         }
       }
-    }
-    board = rotateLeft(board);
-    return setBoardMatrix(board);
+      // перезаписываем значения
+      return row.map((item, index) => {
+        return currentTiles[index]
+          ? { ...item, value: currentTiles[index].value }
+          : { ...item, value: 0 };
+      });
+    });
+    return setBoardMatrix(handleRandomTile(rotateLeft(board)));
   }
 
-  function moveDown(inputBoard: number[][]) {
-    let rotatedRight = rotateRight(inputBoard);
-    let board = [];
-    // Shift all numbers to the left
-    for (let r = 0; r < rotatedRight.length; r++) {
-      let row = [];
-      for (let c = rotatedRight[r].length - 1; c >= 0; c--) {
-        let current = rotatedRight[r][c];
-        current === 0 ? row.push(current) : row.unshift(current);
-      }
-      board.push(row);
-    }
-
-    // Combine numbers and shift to left
-    for (let r = 0; r < board.length; r++) {
-      for (let c = 0; c < board.length; c++) {
-        if (board[r][c] > 0 && board[r][c] === board[r][c + 1]) {
-          board[r][c] = board[r][c] * 2;
-          board[r][c + 1] = 0;
-        } else if (board[r][c] === 0 && board[r][c + 1] > 0) {
-          board[r][c] = board[r][c + 1];
-          board[r][c + 1] = 0;
-        }
-      }
-    }
-
-    // Rotate board back upright
-    board = rotateLeft(board);
-    return setBoardMatrix(board);
-  }
-
-  function moveRight(inputBoard: number[][]) {
-    let board = [];
-    // Shift all numbers to the right
-    for (let r = 0; r < inputBoard.length; r++) {
-      let row = [];
-      for (let c = 0; c < inputBoard[r].length; c++) {
-        let current = inputBoard[r][c];
-        current === 0 ? row.unshift(current) : row.push(current);
-      }
-      board.push(row);
-    }
-    // Combine numbers and shift to right
-    for (let r = 0; r < board.length; r++) {
-      for (let c = board[r].length - 1; c >= 0; c--) {
-        if (board[r][c] > 0 && board[r][c] === board[r][c - 1]) {
-          board[r][c] = board[r][c] * 2;
-          board[r][c - 1] = 0;
-        } else if (board[r][c] === 0 && board[r][c - 1] > 0) {
-          board[r][c] = board[r][c - 1];
-          board[r][c - 1] = 0;
-        }
-      }
-    }
-    return setBoardMatrix(board);
-  }
-
-  function moveLeft(inputBoard: number[][]) {
-    let board = [];
-    // Shift all numbers to the left
-    for (let r = 0; r < inputBoard.length; r++) {
-      let row = [];
-      for (let c = inputBoard[r].length - 1; c >= 0; c--) {
-        let current = inputBoard[r][c];
-        current === 0 ? row.push(current) : row.unshift(current);
-      }
-      board.push(row);
-    }
-    // Combine numbers and shift to left
-    for (let r = 0; r < board.length; r++) {
-      for (let c = 0; c < board.length; c++) {
-        if (board[r][c] > 0 && board[r][c] === board[r][c + 1]) {
-          board[r][c] = board[r][c] * 2;
-          board[r][c + 1] = 0;
-        } else if (board[r][c] === 0 && board[r][c + 1] > 0) {
-          board[r][c] = board[r][c + 1];
-          board[r][c + 1] = 0;
-        }
-      }
-    }
-    return setBoardMatrix(board);
-  }
-
-  // слушатель свайпа по экрану
+  // слушатель свапа по экрану
   const swipeHandler = (direction: string) => {
-    setRandomTile();
-    console.log(direction);
     if (direction === "SWIPE_RIGHT") moveRight(boardMatrix);
     if (direction === "SWIPE_LEFT") moveLeft(boardMatrix);
     if (direction === "SWIPE_UP") moveUp(boardMatrix);
@@ -211,14 +180,14 @@ export default function App() {
         currentScore={currentScore}
         bestScore={bestScore}
       />
-      <Board
-        boardMatrix={boardMatrix}
-        swipeHandler={(i: string) => swipeHandler(i)}
-      />
-      <Text>
-        HOW TO PLAY: Swipe to move the tiles. Tiles with the same number merge
-        into one when they touch. Add them up to reach 2048!
-      </Text>
+      {boardMatrix && (
+        <Board
+          boardMatrix={boardMatrix}
+          swipeHandler={(i: string) => swipeHandler(i)}
+        />
+      )}
+
+      <Footer />
       <StatusBar style="auto" />
     </View>
   );
@@ -228,12 +197,13 @@ const styles = StyleSheet.create({
   container: {
     // flex: 1,
     width: "100%",
-    maxWidth: Dimensions.get("window").width - 10,
+    height: "100%",
+    maxWidth: Dimensions.get("window").width,
     marginHorizontal: "auto",
     backgroundColor: "#fff",
     alignItems: "center",
-    justifyContent: "center",
-    padding: 10,
+    // justifyContent: "center",
+    // padding: 10,
 
     // marginTop: 100,
   },

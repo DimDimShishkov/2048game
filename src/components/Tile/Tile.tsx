@@ -1,34 +1,27 @@
-import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
-import { Alert, Button, StyleSheet, Switch, Text, View } from "react-native";
+import { TileContainer, TileValue } from "./TileStyling";
+import { getTileColor } from "../../hooks/common";
+import { theme } from "../../styles/default";
 
 interface ITile {
+  x: number;
+  y: number;
   value: number;
+  width: number;
+  isNew?: boolean;
+  isMerging?: boolean;
 }
 
-export default function Tile({ value }: ITile) {
+export default function Tile({ x, y, value, width, isNew = false }: ITile) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{value}</Text>
-    </View>
+    <TileContainer
+      x={x}
+      y={y}
+      value={value}
+      width={width}
+      color={theme[getTileColor(value)]}
+      isNew={isNew}
+    >
+      <TileValue>{!!value && value}</TileValue>
+    </TileContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: "18%",
-    height: "22%",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#eee1c9",
-    borderRadius: 3,
-    borderWidth: 1,
-    borderColor: "#00966C",
-  },
-  title: {
-    margin: 0,
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-});

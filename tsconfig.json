@@ -1,6 +1,9 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    // "isolatedModules": false,
+    // "skipLibCheck": true,
+    "types": ["@types/styled-components-react-native"]
   }
 }
