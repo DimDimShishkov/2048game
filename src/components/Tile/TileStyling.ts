@@ -26,9 +26,6 @@ export const TileContainer = styled.View<ITile>`
   border-width: 4px;
   border-color: #776e65;
   box-sizing: border-box;
-  display: flex;
-  text-align: center;
-  justify-content: center;
   `;
 
 export const TileValue = styled.Text`
@@ -37,5 +34,7 @@ export const TileValue = styled.Text`
   display: flex;
   text-align: center;
   justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  line-height: ${100}%;
 `;
-// font-size: inherit;

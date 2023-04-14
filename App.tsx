@@ -32,14 +32,15 @@ export default function App() {
     );
     const emptyCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
     // если найдена, присвоить новое значение
-    emptyCell &&
-      (result = result.map((row) =>
-        row.map((cell) =>
-          cell.x === emptyCell.x && cell.y === emptyCell.y
-            ? { ...cell, value: Math.random() < 0.5 ? 2 : 4, isNew: true }
-            : cell
-        )
-      ));
+    emptyCell
+      ? (result = result.map((row) =>
+          row.map((cell) =>
+            cell.x === emptyCell.x && cell.y === emptyCell.y
+              ? { ...cell, value: Math.random() < 0.5 ? 2 : 4, isNew: true }
+              : cell
+          )
+        ))
+      : setGameOver(true);
     // суммируем очки и записываем результат
     const score = result.reduce(
       (acc, row) => acc + row.reduce((acc, item) => acc + item.value, 0),
@@ -56,6 +57,7 @@ export default function App() {
     setCurrentScore(0);
     setBoardMatrix(newBoard);
     handleRandomTile(newBoard);
+    setGameOver(false);
     return true;
   };
 
@@ -111,12 +113,13 @@ export default function App() {
           currentTiles.splice(c - 2, 1);
         }
       }
+      let rotatedTiles = currentTiles.reverse();
       // // перезаписываем значения
       return row.map((item, index) => {
-        return currentTiles[row.length - 1 - index]
+        return rotatedTiles[row.length - 1 - index]
           ? {
               ...item,
-              value: currentTiles[row.length - 1 - index].value,
+              value: rotatedTiles[row.length - 1 - index].value,
             }
           : {
               ...item,
@@ -124,6 +127,7 @@ export default function App() {
             };
       });
     });
+
     return setBoardMatrix(handleRandomTile(board));
   }
   function moveUp(inputBoard: IBoardMatrix[][]) {
@@ -202,6 +206,7 @@ const styles = StyleSheet.create({
     marginHorizontal: "auto",
     backgroundColor: "#fff",
     alignItems: "center",
+    position: "relative",
     // justifyContent: "center",
     // padding: 10,
 
