@@ -1,20 +1,15 @@
 import { StatusBar } from "expo-status-bar";
-import { Dimensions, SafeAreaView } from "react-native";
-import { Appearance } from "react-native";
-import { useContext } from "react";
-import styled from "styled-components/native";
-
-import { StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Appearance, Dimensions } from "react-native";
+import styled, { ThemeProvider } from "styled-components/native";
 import Header from "./src/components/Header/Header";
 import Board from "./src/components/Board/Board";
-import { useEffect, useState } from "react";
 import Footer from "./src/components/Footer/Footer";
 import { boardGenerator } from "./src/hooks/common";
 import { IBoardMatrix } from "./src/hooks/types";
-import { ThemeProvider } from "styled-components/native";
 import { theme } from "./src/styles/default";
 import { nightTheme } from "./src/styles/night";
-import { Color, ITheme, ThemeName } from "./src/styles/types";
+import { ThemeName } from "./src/styles/types";
 
 export default function App() {
   const [isGameOver, setGameOver] = useState(false);
@@ -202,7 +197,7 @@ export default function App() {
     return setBoardMatrix(handleRandomTile(rotateLeft(board)));
   }
 
-  // слушатель свапа по экрану
+  // слушатель свайпа по экрану
   const swipeHandler = (direction: string) => {
     if (direction === "SWIPE_RIGHT") moveRight(boardMatrix);
     if (direction === "SWIPE_LEFT") moveLeft(boardMatrix);
@@ -211,10 +206,8 @@ export default function App() {
   };
 
   return (
-    <ThemeProvider
-      theme={(currentScheme === "light" ? theme : nightTheme) as ITheme}
-    >
-      {/* changed View to SafeAreaView because of Iphone  */}
+    <ThemeProvider theme={currentScheme === "light" ? theme : nightTheme}>
+      {/* замена View на SafeAreaView из-за челок на айфоне  */}
       <Container>
         <Header
           startNewGame={() => startNewGame()}
@@ -229,9 +222,11 @@ export default function App() {
           <Board
             boardMatrix={boardMatrix}
             swipeHandler={(i: string) => swipeHandler(i)}
+            isGameOver={isGameOver}
           />
         )}
         <Footer />
+
         <StatusBar style="auto" />
       </Container>
     </ThemeProvider>
@@ -245,18 +240,5 @@ export const Container = styled.SafeAreaView`
   margin-horizontal: auto;
   align-items: center;
   position: relative;
-  background-color: ${(props) => props.theme.background || "#fff"};
+  background-color: ${(props) => props.theme["background"]};
 `;
-
-// background-color: ${(props) => props.theme["background"]};
-// const styles = StyleSheet.create({
-//   container: {
-//     width: "100%",
-//     height: "100%",
-//     maxWidth: Dimensions.get("window").width,
-//     marginHorizontal: "auto",
-//     // backgroundColor: "#fff",
-//     alignItems: "center",
-//     position: "relative",
-//   },
-// });

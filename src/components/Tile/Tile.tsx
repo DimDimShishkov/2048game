@@ -1,17 +1,13 @@
-import { TileContainer, TileText, TileValue } from "./TileStyling";
-import { getTileColor } from "../../hooks/common";
-import { theme } from "../../styles/default";
-import { Animated } from "react-native";
 import { useEffect, useRef } from "react";
-import { useTheme } from "styled-components";
+import { Animated } from "react-native";
+import { TileContainer, TileText, TileValue } from "./TileStyling";
 
 interface ITile {
   x: number;
   y: number;
   value: number;
   width: number;
-  isNew?: boolean;
-  isMerging?: boolean;
+  isNew: boolean;
 }
 
 export default function Tile({ x, y, value, width, isNew = false }: ITile) {
@@ -44,13 +40,7 @@ export default function Tile({ x, y, value, width, isNew = false }: ITile) {
   };
 
   return (
-    <TileContainer
-      x={x}
-      y={y}
-      width={width}
-      color={theme[getTileColor(value)]}
-      isNew={isNew}
-    >
+    <TileContainer x={x} y={y} width={width} isNew={isNew}>
       <TileItem width={width} value={value} style={[animatedStyles]}>
         <TileText>{!!value && value} </TileText>
       </TileItem>

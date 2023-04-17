@@ -12,8 +12,22 @@ export const BoardContainer = styled.View<IBoard>`
   height: ${({ boardMatrix }) => deviseWightHandler(boardMatrix[0]?.length)}px;
   max-height: 400px;
   position: relative;
+`;
+
+export const GameOverContainer = styled.View`
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 5;
+  background-color: ${(props) => props.theme["background"]};
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0;
+`;
+
+export const GameOverText = styled.Text`
+  font-size: 40px;
+  text-align: center;
 `;

@@ -6,7 +6,7 @@ export type Color =
   | "scoreBack"
   | "newGameButton"
   | "background"
-  | "backdrop"
+  | "borderColor"
   | "tile0"
   | "tile2"
   | "tile4"
@@ -20,7 +20,7 @@ export type Color =
   | "tile1024"
   | "tile2048";
 
-export type ITheme = Record<Color, string>;
+// export type ITheme = Record<Color, string>;
 
 export type ThemeName = "light" | "dark";
 
@@ -33,7 +33,7 @@ declare module "styled-components" {
     scoreBack: string;
     newGameButton: string;
     background: string;
-    backdrop: string;
+    borderColor: string;
     tile0: string;
     tile2: string;
     tile4: string;

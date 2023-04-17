@@ -1,14 +1,15 @@
-import { ITheme } from "./types";
 import { theme } from "./default";
+import { DefaultTheme } from "styled-components";
 
-export const nightTheme: ITheme = {
+export const nightTheme: DefaultTheme = {
   ...theme,
   mainText: "#ffffff",
   subText: "#000000",
   scoreBack: "#ec9050",
   newGameButton: "#D7B5CD",
   background: "#4c5f7a",
-  backdrop: "#000000",
+  borderColor: "#776e65",
+  tile0: "#625f5b",
   tile2: "#e0e0e0",
   tile4: "#e0e0c0",
   tile8: "#f0b080",

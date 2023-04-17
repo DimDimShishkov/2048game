@@ -1,13 +1,10 @@
-import styled, { ThemeContext } from "styled-components/native";
+import styled from "styled-components/native";
 import { getTileColor } from "../../hooks/common";
-import { theme } from "../../styles/default";
-import { useContext } from "react";
 
 interface ITile {
   x: number;
   y: number;
   width: number;
-  color: string;
   isNew: boolean;
 }
 
@@ -27,7 +24,7 @@ export const TileContainer = styled.View<ITile>`
   transform: translate(${({ x, y }) => `${x}px, ${y}px`})
   transition: translate 0.15s ease-in-out;
   border-width: 4px;
-  border-color: #776e65;
+  border-color: ${(props) => props.theme.borderColor};
   box-sizing: border-box;
   `;
 
@@ -38,10 +35,10 @@ export const TileValue = styled.View<ITileValue>`
   text-align: center;
   justify-content: center;
   align-items: center;
-  background: ${({ value }) => theme[getTileColor(value)]};
+  background: ${({ theme, value }) => theme[getTileColor(value)]};
 `;
-// background: ${(props) => console.log(props.theme)};
 
 export const TileText = styled.Text`
-  font-size: 20px;
+  font-size: 40px;
+  text-align: center;
 `;
