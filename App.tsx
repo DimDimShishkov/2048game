@@ -1,24 +1,32 @@
 import { StatusBar } from "expo-status-bar";
-import { Dimensions } from "react-native";
+import { Dimensions, SafeAreaView } from "react-native";
+import { Appearance } from "react-native";
+import { useContext } from "react";
+import styled from "styled-components/native";
 
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Header from "./src/components/Header/Header";
 import Board from "./src/components/Board/Board";
 import { useEffect, useState } from "react";
 import Footer from "./src/components/Footer/Footer";
 import { boardGenerator } from "./src/hooks/common";
 import { IBoardMatrix } from "./src/hooks/types";
+import { ThemeProvider } from "styled-components/native";
+import { theme } from "./src/styles/default";
+import { nightTheme } from "./src/styles/night";
+import { Color, ITheme, ThemeName } from "./src/styles/types";
 
 export default function App() {
   const [isGameOver, setGameOver] = useState(false);
   const [currentScore, setCurrentScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
-
+  const [currentScheme, setScheme] = useState<ThemeName>("light");
   const [boardMatrix, setBoardMatrix] = useState<IBoardMatrix[][]>([]);
   const [boardRows, setBoardRows] = useState(4);
   const [boardColumns, setBoardColumns] = useState(4);
 
   useEffect(() => {
+    setScheme(Appearance.getColorScheme() || "light");
     let newBoard = boardGenerator(boardRows, boardColumns);
     setBoardMatrix(handleRandomTile(newBoard));
   }, [boardRows, boardColumns]);
@@ -55,8 +63,7 @@ export default function App() {
   const startNewGame = () => {
     let newBoard = boardGenerator(boardRows, boardColumns);
     setCurrentScore(0);
-    setBoardMatrix(newBoard);
-    handleRandomTile(newBoard);
+    setBoardMatrix(handleRandomTile(newBoard));
     setGameOver(false);
     return true;
   };
@@ -92,14 +99,21 @@ export default function App() {
       for (let c = 0; c < currentTiles.length; c++) {
         if (currentTiles[c].value === currentTiles[c + 1]?.value) {
           currentTiles[c].value = currentTiles[c].value * 2;
+          currentTiles[c].isNew = true;
           currentTiles.splice(c + 1, 1);
+        } else {
+          currentTiles[c].isNew = false;
         }
       }
       // перезаписываем значения
       return row.map((item, index) => {
         return currentTiles[index]
-          ? { ...item, value: currentTiles[index].value }
-          : { ...item, value: 0 };
+          ? {
+              ...item,
+              value: currentTiles[index].value,
+              isNew: currentTiles[index].isNew,
+            }
+          : { ...item, value: 0, isNew: false };
       });
     });
     return setBoardMatrix(handleRandomTile(board));
@@ -110,7 +124,10 @@ export default function App() {
       for (let c = currentTiles.length; c > 0; c--) {
         if (currentTiles[c - 1].value === currentTiles[c - 2]?.value) {
           currentTiles[c - 1].value = currentTiles[c - 1].value * 2;
+          currentTiles[c - 1].isNew = true;
           currentTiles.splice(c - 2, 1);
+        } else {
+          currentTiles[c - 1].isNew = false;
         }
       }
       let rotatedTiles = currentTiles.reverse();
@@ -120,10 +137,12 @@ export default function App() {
           ? {
               ...item,
               value: rotatedTiles[row.length - 1 - index].value,
+              isNew: rotatedTiles[row.length - 1 - index].isNew,
             }
           : {
               ...item,
               value: 0,
+              isNew: false,
             };
       });
     });
@@ -137,14 +156,21 @@ export default function App() {
       for (let c = 0; c < currentTiles.length; c++) {
         if (currentTiles[c].value === currentTiles[c + 1]?.value) {
           currentTiles[c].value = currentTiles[c].value * 2;
+          currentTiles[c].isNew = true;
           currentTiles.splice(c + 1, 1);
+        } else {
+          currentTiles[c].isNew = false;
         }
       }
       // перезаписываем значения
       return row.map((item, index) => {
         return currentTiles[index]
-          ? { ...item, value: currentTiles[index].value }
-          : { ...item, value: 0 };
+          ? {
+              ...item,
+              value: currentTiles[index].value,
+              isNew: currentTiles[index].isNew,
+            }
+          : { ...item, value: 0, isNew: false };
       });
     });
     return setBoardMatrix(handleRandomTile(rotateRight(board)));
@@ -156,14 +182,21 @@ export default function App() {
       for (let c = 0; c < currentTiles.length; c++) {
         if (currentTiles[c].value === currentTiles[c + 1]?.value) {
           currentTiles[c].value = currentTiles[c].value * 2;
+          currentTiles[c].isNew = true;
           currentTiles.splice(c + 1, 1);
+        } else {
+          currentTiles[c].isNew = false;
         }
       }
       // перезаписываем значения
       return row.map((item, index) => {
         return currentTiles[index]
-          ? { ...item, value: currentTiles[index].value }
-          : { ...item, value: 0 };
+          ? {
+              ...item,
+              value: currentTiles[index].value,
+              isNew: currentTiles[index].isNew,
+            }
+          : { ...item, value: 0, isNew: false };
       });
     });
     return setBoardMatrix(handleRandomTile(rotateLeft(board)));
@@ -178,38 +211,52 @@ export default function App() {
   };
 
   return (
-    <View style={styles.container}>
-      <Header
-        startNewGame={() => startNewGame()}
-        currentScore={currentScore}
-        bestScore={bestScore}
-      />
-      {boardMatrix && (
-        <Board
-          boardMatrix={boardMatrix}
-          swipeHandler={(i: string) => swipeHandler(i)}
+    <ThemeProvider
+      theme={(currentScheme === "light" ? theme : nightTheme) as ITheme}
+    >
+      {/* changed View to SafeAreaView because of Iphone  */}
+      <Container>
+        <Header
+          startNewGame={() => startNewGame()}
+          currentScore={currentScore}
+          bestScore={bestScore}
+          currentScheme={currentScheme}
+          setScheme={(currentScheme: string) =>
+            setScheme(currentScheme === "light" ? "dark" : "light")
+          }
         />
-      )}
-
-      <Footer />
-      <StatusBar style="auto" />
-    </View>
+        {boardMatrix && (
+          <Board
+            boardMatrix={boardMatrix}
+            swipeHandler={(i: string) => swipeHandler(i)}
+          />
+        )}
+        <Footer />
+        <StatusBar style="auto" />
+      </Container>
+    </ThemeProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    width: "100%",
-    height: "100%",
-    maxWidth: Dimensions.get("window").width,
-    marginHorizontal: "auto",
-    backgroundColor: "#fff",
-    alignItems: "center",
-    position: "relative",
-    // justifyContent: "center",
-    // padding: 10,
+export const Container = styled.SafeAreaView`
+  width: 100%;
+  height: 100%;
+  max-width: ${Dimensions.get("window").width}px;
+  margin-horizontal: auto;
+  align-items: center;
+  position: relative;
+  background-color: ${(props) => props.theme.background || "#fff"};
+`;
 
-    // marginTop: 100,
-  },
-});
+// background-color: ${(props) => props.theme["background"]};
+// const styles = StyleSheet.create({
+//   container: {
+//     width: "100%",
+//     height: "100%",
+//     maxWidth: Dimensions.get("window").width,
+//     marginHorizontal: "auto",
+//     // backgroundColor: "#fff",
+//     alignItems: "center",
+//     position: "relative",
+//   },
+// });

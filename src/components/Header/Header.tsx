@@ -1,57 +1,72 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
+import { ThemeContext, useTheme } from "styled-components";
 
 interface IProps {
   startNewGame: () => boolean;
   currentScore: number;
   bestScore: number;
+  currentScheme: string;
+  setScheme: (v: string) => void;
 }
 
 export default function Header({
   startNewGame,
   currentScore,
   bestScore,
+  currentScheme,
+  setScheme,
 }: IProps) {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
-
+  let palette = useTheme();
+  console.log(palette);
   return (
     <View style={styles.container} accessibilityRole="header">
-      <View style={styles.item}>
-        <Text style={styles.title}>2048</Text>
+      {/* <View style={styles.item}>
+        <Text style={{ color: palette.mainText, ...styles.title }}>2048</Text>
         <View style={styles.scores}>
-          <View style={styles.score}>
-            <Text style={styles.scoreTitle}>score</Text>
-            <Text style={styles.scoreSubtitle}>{currentScore}</Text>
+          <View style={{ backgroundColor: palette.scoreBack, ...styles.score }}>
+            <Text style={{ color: palette.subText, ...styles.scoreTitle }}>
+              score
+            </Text>
+            <Text style={{ color: palette.subText, ...styles.scoreSubtitle }}>
+              {currentScore}
+            </Text>
           </View>
-          <View style={styles.score}>
-            <Text style={styles.scoreTitle}>best</Text>
-            <Text style={styles.scoreSubtitle}>{bestScore}</Text>
+          <View style={{ backgroundColor: palette.scoreBack, ...styles.score }}>
+            <Text style={{ color: palette.subText, ...styles.scoreTitle }}>
+              best
+            </Text>
+            <Text style={{ color: palette.subText, ...styles.scoreSubtitle }}>
+              {bestScore}
+            </Text>
           </View>
         </View>
       </View>
       <View style={styles.item}>
         <View style={styles.scores}>
-          <Text style={styles.subtitle}>Dark Mode</Text>
+          <Text style={{ color: palette.mainText, ...styles.subtitle }}>
+            Dark Mode
+          </Text>
           <Switch
-            onValueChange={toggleSwitch}
-            value={isEnabled}
+            onValueChange={() => setScheme(currentScheme)}
+            value={currentScheme !== "light"}
             trackColor={{ false: "#767577", true: "#81b0ff" }}
-            thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
+            thumbColor={currentScheme !== "light" ? "#f5dd4b" : "#f4f3f4"}
           />
         </View>
         <View
-          style={styles.button}
+          style={{
+            backgroundColor: palette.newGameButton,
+            ...styles.button,
+          }}
           accessibilityRole="button"
           onStartShouldSetResponderCapture={() => startNewGame()}
         >
-          <Text style={styles.scoreTitle}>NEW GAME</Text>
+          <Text style={{ color: palette.subText, ...styles.scoreTitle }}>
+            NEW GAME
+          </Text>
         </View>
-        {/* <Button
-          title="NEW GAME"
-          onPress={() => Alert.alert("Simple Button pressed")}
-        /> */}
-      </View>
+      </View> */}
     </View>
   );
 }
@@ -60,8 +75,7 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     maxWidth: 500,
-    marginVertical: 50,
-    backgroundColor: "#fff",
+    marginVertical: 20,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -81,15 +95,11 @@ const styles = StyleSheet.create({
   title: {
     margin: 0,
     fontSize: 60,
-    // lineHeight: 80,
-    // lineHeight: 1.02,
     fontWeight: "bold",
   },
   subtitle: {
     margin: 0,
     fontSize: 16,
-    // lineHeight: 80,
-    // lineHeight: 1.02,
     fontWeight: "bold",
   },
   scores: {
@@ -107,9 +117,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#bbada0",
     borderRadius: 4,
-    color: "white",
     minWidth: 100,
     height: 80,
   },
@@ -118,21 +126,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     textTransform: "uppercase",
-    color: "white",
   },
   scoreSubtitle: {
     margin: 0,
     fontSize: 24,
     fontWeight: "bold",
     alignSelf: "center",
-    color: "white",
   },
   button: {
-    backgroundColor: "#8f7a66",
     border: "none",
     borderRadius: 4,
     paddingHorizontal: 20,
-    color: "#f9f6f2",
     height: 40,
     width: "100%",
     maxWidth: 150,

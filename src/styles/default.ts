@@ -1,14 +1,14 @@
 import { ITheme } from "./types";
+import { DefaultTheme } from "styled-components";
 
 export const theme: ITheme = {
-  transparent: "transparent",
   black: "#000000",
   white: "#ffffff",
-  primary: "#776e65",
-  secondary: "#bbada0",
-  tertiary: "#eee4da",
-  foreground: "#ffffff",
-  background: "#ffffff",
+  mainText: "#000000",
+  subText: "#ffffff",
+  scoreBack: "#bbada0",
+  newGameButton: "#8f7a66",
+  background: "#eee4da",
   backdrop: "#edc22e",
   tile0: "#625f5b",
   tile2: "#eeeeee",

@@ -3,11 +3,11 @@ import { theme } from "./default";
 
 export const nightTheme: ITheme = {
   ...theme,
-  primary: "#ec9050",
-  secondary: "#222831",
-  tertiary: "#4c5f7a",
-  foreground: "#ffffff",
-  background: "#000000",
+  mainText: "#ffffff",
+  subText: "#000000",
+  scoreBack: "#ec9050",
+  newGameButton: "#D7B5CD",
+  background: "#4c5f7a",
   backdrop: "#000000",
   tile2: "#e0e0e0",
   tile4: "#e0e0c0",
